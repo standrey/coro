@@ -1,12 +1,12 @@
-EXE=fizzbuzz boostproxy pipes basiccoro
+FILES=fizzbuzz boostproxy pipes basiccoro interleaving
 
 .PHONY: all
-all: $(EXE)
+all: $(FILES)
 
 %: %.cpp
 	g++ -Wall -fcoroutines -g -o -fno-exceptions -std=c++23 -Wextra -fno-inline -o $@ $<
 
 .PHONY: clean 
 clean:
-	rm -rfv $(EXE)
+	rm -rfv $(FILES)
 
