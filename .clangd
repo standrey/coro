@@ -1,0 +1,4 @@
+If:
+  PathMatch: .*\.cpp
+CompileFlags:
+  Add: -Wno-unused-function -fcoroutines -std=c++23

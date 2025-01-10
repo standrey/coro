@@ -1,4 +1,4 @@
-FILES=fizzbuzz boostproxy pipes basiccoro interleaving rangecoro
+FILES=fizzbuzz boostproxy pipes basiccoro interleaving rangecoro coroscheduler
 
 .PHONY: all
 all: $(FILES)
