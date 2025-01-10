@@ -10,12 +10,12 @@ using namespace std::string_literals;
 struct Generator {
 
     struct promise_type {
-        char value{};
+        int value{};
 
         void unhandled_exception() noexcept {}
         Generator get_return_object() { return Generator{this}; }
         std::suspend_never initial_suspend() noexcept { return {}; }
-        std::suspend_always yield_value(auto msg) noexcept {
+        std::suspend_always yield_value(int msg) noexcept {
             value = std::move(msg);
             return {};
         }
@@ -32,9 +32,9 @@ struct Generator {
     void resume() { if(!corohdl.done()) corohdl.resume(); }
 };
     
-
-Generator interleave(std::vector<char> a, std::vector<char> b) {
-    auto l = [](std::vector<char> v) -> Generator {
+template<typename T>
+Generator interleave(T a, T b) {
+    auto l = [](T & v) -> Generator {
         for (const auto & x : v) co_yield x;
     };
 
@@ -57,7 +57,14 @@ Generator interleave(std::vector<char> a, std::vector<char> b) {
 
 int main()
 {
-    Generator g{interleave({1,3,5,7}, {2,4,6,8})};
+    using IntVector = std::vector<int>;
+    IntVector mainv{1,2,3,4,5,6,7,8};
+    auto middle_iter{mainv.begin()};
+    std::advance(middle_iter, mainv.size()/2);
+    IntVector left_half(mainv.begin(), middle_iter);
+    IntVector right_half(middle_iter, mainv.end());
+
+    Generator g{interleave(left_half, right_half)};
     while (!g.is_done()) {
         std::cout << g.value() << "\n";
         g.resume();
