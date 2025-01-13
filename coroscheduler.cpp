@@ -29,6 +29,8 @@ public:
         };
         return awaiter{*this};
     }
+
+    auto suspend(std::coroutine_handle<> coro) { tasks.push_back(coro); }
 };
 
 struct Task {
@@ -40,6 +42,19 @@ struct Task {
     };
 };
 
+Scheduler gScheduler;
+
+struct suspend { 
+    auto operator co_await() {
+        struct awaiter : std::suspend_always {
+            void await_suspend(std::coroutine_handle<> coro) const noexcept { gScheduler.suspend(coro); } 
+        };
+    
+        return awaiter{};
+    }
+};
+
+
 template <char TaskName>
 Task task(Scheduler &s) {
     std::println("Start task {}", TaskName);
@@ -49,11 +64,30 @@ Task task(Scheduler &s) {
     std::println("End task {}", TaskName);
 }
 
-int main() {
+
+template <char TaskName>
+Task task() {
+    std::println("Start task {}", TaskName);
+    co_await suspend{};
+    std::println("Middle task {}", TaskName);
+    co_await suspend{};
+    std::println("End task {}", TaskName);
+}
+
+void use_sched_1() {
     Scheduler s;
     task<'1'>(s);
     task<'2'>(s);
     while (s.schedule());
-    std::println("About to exit - tasks count {}", s.tasks_count());
+}
+
+void use_sched_2() {
+    task<'1'>();
+    task<'2'>();
+    while (gScheduler.schedule());
+}
+
+int main() {
+    use_sched_1();
     return 0;
 }
